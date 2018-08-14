@@ -1,0 +1,13 @@
+#!/bin/bash
+# This fixes hostname errors where 127.0.1.1 is missing from the default OS.
+
+hn=$(/bin/hostname)
+printf "Ensuring Hostname is Setup Correctly... "
+
+if ! grep -q "127.0.1.1" /etc/hosts; then
+  echo -e "127.0.1.1\t$hn" >> /etc/hosts
+  echo "Chance was required. Patched."
+else
+  echo "No change required."
+fi
+

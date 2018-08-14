@@ -1,0 +1,20 @@
+#!/bin/bash
+project=$(cat /etc/baldnerd/project)
+
+a2enmod ssl
+apt -y install php7.0-xml php7.0-mbstring ssl-cert libapache2-mod-security2
+
+# Generating new Snakeoil cert
+/usr/sbin/make-ssl-cert generate-default-snakeoil --force-overwrite
+
+systemctl stop apache2
+cp -f /root/$project/$project-admin/data/apache2/sites-available/000-default.conf /etc/apache2/sites-available
+/bin/sed -i -- 's,{{project}},'"$project"',g' /etc/apache2/sites-available/000-default.conf
+
+# Change Apache footer
+a2enmod security2
+a2enconf security
+echo "SecServerSignature $project/$ver" >> /etc/apache2/conf-available/security.conf
+
+systemctl start apache2
+

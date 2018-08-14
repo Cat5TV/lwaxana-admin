@@ -1,0 +1,17 @@
+#!/bin/bash
+
+printf "Installing rpimonitor... "
+
+  apt update
+  apt -y install dirmngr libraspberrypi-bin
+  echo "deb http://giteduberger.fr rpimonitor/" > /etc/apt/sources.list.d/rpimonitor.list
+  echo ""
+  apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 2C0D3C0F
+  apt update
+  apt -y install rpimonitor
+  /etc/init.d/rpimonitor update
+  systemctl stop rpimonitor
+  cp /root/nems/nems-migrator/data/1.4/rpimonitor/daemon.conf /etc/rpimonitor/
+  cp -f /root/nems/nems-migrator/data/1.4/rpimonitor/template/* /etc/rpimonitor/template/
+  systemctl start rpimonitor
+  echo "Done."

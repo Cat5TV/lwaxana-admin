@@ -1,0 +1,22 @@
+#!/bin/bash
+# Replace the screen with our bootscreen which shows some basic info to the user (like how to connect)
+
+project=$(cat /etc/baldnerd/project)
+
+apt install -y dialog
+
+if [[ ! -d /etc/systemd/system/getty@tty1.service.d ]]; then
+  mkdir /etc/systemd/system/getty@tty1.service.d
+fi
+systemctl disable getty@tty1.service
+systemctl stop getty@tty1.service
+echo "
+[Service]
+ExecStart=
+ExecStart=-/usr/local/share/$project/project-scripts/bootscreen.sh
+StandardInput=tty
+StandardOutput=tty
+" > /etc/systemd/system/getty@tty1.service.d/override.conf
+systemctl daemon-reload
+systemctl enable getty@tty1.service
+systemctl start getty@tty1.service

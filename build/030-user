@@ -1,0 +1,31 @@
+#!/bin/bash
+
+defaultup=admin
+
+# Create default admin user
+  adduser --disabled-password --gecos "" $defaultup
+
+# Allow user to become super-user
+  usermod -aG sudo $defaultup
+
+# Set the user password
+  echo -e "$defaultup\n$defaultup" | passwd $defaultup >/tmp/init 2>&1
+
+# Add user to sudoers and disable root login if that's successful
+  usermod -aG sudo $defaultup && passwd -l root
+
+# Add files to home folder (which later get moved to initialized user account at init)
+  cd /home/$defaultup
+  wget -O license.txt https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+
+# Delete any non-root user and remove their home folder (eg: pi)
+  userdel -f -r pi
+  userdel -f -r test #armbian
+  userdel -f -r odroid
+  userdel -f -r rock64
+  userdel -f -r linaro # ASUS TinkerBoard
+  userdel -f -r dietpi
+  userdel -f -r pine # Pine A64+
+
+# Remove sudo message
+echo "Defaults lecture = never" > /etc/sudoers.d/privacy

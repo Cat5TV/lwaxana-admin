@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Add and configure the main project packages
+project=$(cat /etc/baldnerd/project)
+projectUpper=$(echo $project | awk '{print toupper($0)}')
+
+# System
+
+  if [[ ! -d /var/log/$project ]]; then
+    mkdir /var/log/$project
+  fi
+
+# Disable swap - we'll be using ZRAM
+  sed -i '/ swap / s/^/#/' /etc/fstab
+  swapoff -a
+
+cd /root/$project # this was created with prep.sh
+
+# Import crontab (must happen after nems-migrator but before fixes.sh)
+crontab /root/$project/$project-admin/data/crontab
+
+# Web Interface
+cd /var/www
+rm -rf html && git clone https://github.com/Cat5TV/$project-www && mv $project-www html && chown -R www-data:www-data html
+
+# nConf
+apt update
+# Need to be able to use the MySQL database from PHP
+apt install -y php7.0-mysql libdbi-perl libdbd-mysql-perl
+systemctl restart apache2
+
+if [[ ! -d /usr/local/share/$project ]]; then
+  mkdir /usr/local/share/$project
+fi
+cd /usr/local/share/$project
+git clone https://github.com/Cat5TV/$project-scripts
+
+# Add base symlinks for project-specific commands
+# ln -sf /usr/local/share/nems/nems-scripts/benchmark.sh /usr/local/bin/nems-benchmark
+
+# Create symlinks, apply patches/fixes, etc.
+/usr/local/share/$project/$project-scripts/fixes.sh
+
+# Enable MOTD
+echo > /etc/motd
+cp /root/$project/$project-admin/data/motd.tcl /etc/
+chmod 755 /etc/motd.tcl
+if ! grep -q "/etc/motd.tcl" /etc/profile; then
+  echo "/etc/motd.tcl" >> /etc/profile
+fi
+
+# Our Apache conf requires htpasswd exist in order to load.
+# Prevent misleading errors before nems-init by creating an empty file.
+touch /var/www/htpasswd
+chown www-data:www-data /var/www/htpasswd
+
+# Generate certificates
+nems-cert
+
+# Restart related services
+systemctl restart apache2
+systemctl restart nagios

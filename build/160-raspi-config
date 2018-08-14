@@ -1,0 +1,6 @@
+#!/bin/bash
+
+printf "Installing raspi-config... "
+  apt update
+  apt -y install raspi-config
+  echo "Done."

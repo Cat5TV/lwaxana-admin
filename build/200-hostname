@@ -1,0 +1,11 @@
+#!/bin/bash
+project=$(cat /etc/baldnerd/project)
+
+hn=$(/bin/hostname)
+printf "Changing Hostname... "
+/bin/sed -i -- 's/'"$hn"'/'"$project"'/g' /etc/hosts
+/bin/sed -i -- 's/'"$hn"'/'"$project"'/g' /etc/hostname
+hostnamectl set-hostname $project
+echo Done.
+echo Change will take effect at next reboot.
+

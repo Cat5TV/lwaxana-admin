@@ -1,0 +1,19 @@
+#!/bin/bash
+project=$(cat /etc/baldnerd/project)
+projectUpper=$(echo $project | awk '{print toupper($0)}')
+
+# Perform some additional TTY setup without manipulating the splash (010-tty)
+
+if [[ ! -f /etc/rc.local ]]; then
+  echo "#!/bin/bash
+  " > /etc/rc.local
+  chmod +x /etc/rc.local
+fi
+
+if ! grep -q "$projectupper00000" /etc/rc.local; then
+  echo "# $projectupper00000 Don't blank TTY1
+  setterm -blank 0
+" >> /etc/rc.local
+  /bin/systemctl stop rc-local.service
+  /bin/systemctl start rc-local.service
+fi

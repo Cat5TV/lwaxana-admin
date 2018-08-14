@@ -1,0 +1,12 @@
+#!/bin/bash
+project=$(cat /etc/baldnerd/project)
+projectUpper=$(echo $project | awk '{print toupper($0)}')
+
+cd /opt
+git clone https://github.com/alexa-pi/AlexaPi.git
+
+# this will eventually be replaced with a migrated config
+./AlexaPi/src/scripts/setup.sh
+
+systemctl start AlexaPi.service
+systemctl enable AlexaPi.service
